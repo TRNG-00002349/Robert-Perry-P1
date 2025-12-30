@@ -4,4 +4,8 @@
     <artifactId>robert-perry-p1</artifactId>
     <version>1</version>
     <packaging>jar</packaging>
+    <properties>
+        <maven.compiler.release>25</maven.compiler.release>
+    </properties>
+
 </project>
