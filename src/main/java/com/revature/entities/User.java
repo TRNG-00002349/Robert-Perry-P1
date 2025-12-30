@@ -20,6 +20,11 @@ public class User {
         this.lastName = lastName;
     }
 
+    public User(Integer id, String username, String email, String password, String firstName, String lastName) {
+        this.id = id;
+        this(username, email, password, firstName, lastName);
+    }
+
     public Integer getId() {
         return id;
     }
@@ -68,8 +73,5 @@ public class User {
         this.lastName = lastName;
     }
 
-    public User(Integer id, String username, String email, String password, String firstName, String lastName) {
-        this.id = id;
-        this(username, email, password, firstName, lastName);
-    }
+
 }
