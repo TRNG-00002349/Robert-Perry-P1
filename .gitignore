@@ -26,3 +26,6 @@ replay_pid*
 #output folder
 target/
 .vscode/
+
+#configs
+application.properties
