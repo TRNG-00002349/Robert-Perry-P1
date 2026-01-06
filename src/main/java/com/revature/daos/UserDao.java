@@ -50,4 +50,69 @@ public class UserDao {
         return user;
     }
 
+    public User getById(int id) throws SQLException{
+        //Insert record into the user table
+        String sql = "SELECT * FROM users WHERE id = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, id);
+        ResultSet rs = pstmt.executeQuery();
+        
+        User user = new User();
+        if(rs.next()) {
+            user.setId(rs.getInt("id"));
+            user.setEmail(rs.getString("email"));
+            user.setUsername(rs.getString("username"));
+            user.setFirstName(rs.getString("fname"));
+            user.setLastName(rs.getString("lname"));
+        }   
+        return user;  
+    }
+
+    public User getByUsername(String username) throws SQLException{
+        //Insert record into the user table
+        String sql = "SELECT * FROM users WHERE username = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, username);
+        ResultSet rs = pstmt.executeQuery();
+        
+        User user = new User();
+        if(rs.next()) {
+            user.setId(rs.getInt("id"));
+            user.setEmail(rs.getString("email"));
+            user.setUsername(rs.getString("username"));
+            user.setFirstName(rs.getString("fname"));
+            user.setLastName(rs.getString("lname"));
+        }   
+        return user;  
+    }
+
+    public User update(User user) throws SQLException{
+        String sql = "UPDATE users SET username = ?, email = ?, fname = ?, lname = ? WHERE id = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, user.getUsername());
+        pstmt.setString(2, user.getEmail());
+        pstmt.setString(3, user.getFirstName());
+        pstmt.setString(4, user.getLastName());
+        pstmt.setInt(5, user.getId());
+        int rowsAffected = pstmt.executeUpdate();
+        
+        //here check if rows affected, if not throw some error
+        return user;  
+    }
+
+    public boolean delete(int id) {
+        String sql = "DELETE FROM users WHERE id = ?";
+        try{
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, id);
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0){
+                return true;
+            }
+            return false;
+        } catch (SQLException e){
+            return false;
+        }
+    }
+
 }

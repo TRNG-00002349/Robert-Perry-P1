@@ -27,5 +27,33 @@ public class UserService {
         return new User();
     }
 
+    public User getById(int id){
+        try{
+           return userDao.getById(id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return new User();
+    }
+
+    public User getByUsername(String username){
+         try{
+           return userDao.getByUsername(username);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return new User();
+    }
+
+    public User update(User user){
+        //need put/patch logic here
+        return new User();
+    }
+
+    public boolean delete(int id){
+           return userDao.delete(id);
+    }
 
 }

@@ -27,6 +27,38 @@ public class UserController {
         ctx.json(finalUser);
     }
 
+    public void getById(Context ctx){
+        int id = Integer.parseInt(ctx.pathParam("id"));
+        User user = userService.getById(id);
+
+        ctx.status(HttpStatus.OK);
+        ctx.json(user);
+    }
+
+    public void getByUsername(Context ctx){
+        String username = ctx.pathParam("username");
+        User user = userService.getByUsername(username);
+
+        ctx.status(HttpStatus.OK);
+        ctx.json(user);
+    }
+
+    public void update(Context ctx){
+        User newUser = ctx.bodyAsClass(User.class);
+        User finalUser = userService.update(newUser);
+
+        ctx.status(HttpStatus.OK);
+        ctx.json(finalUser);
+    }
+
+    public void delete(Context ctx){
+        int id = Integer.parseInt(ctx.pathParam("id"));
+        if(userService.delete(id)){ctx.status(HttpStatus.OK);}
+        else {ctx.status(HttpStatus.NOT_FOUND);}
+
+        
+    }
+
     public void handleUniqenessViolationException(UniquenessViolationException e, Context ctx){
         ctx.status(HttpStatus.CONFLICT);
         ctx.result("The username or email is already associated with another account.");
