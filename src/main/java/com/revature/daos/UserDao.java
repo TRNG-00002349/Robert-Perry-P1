@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.revature.entities.User;
+import com.revature.exceptions.UniquenessViolationException;
 import com.revature.utils.DatabaseUtil;
 
 /*
@@ -16,30 +17,36 @@ import com.revature.utils.DatabaseUtil;
 public class UserDao {
      Connection conn = DatabaseUtil.getConnection();
 
-    public User saveUser(User user) throws SQLException{
+    public User saveUser(User user) throws SQLException, UniquenessViolationException{
         //Insert record into the user table
         String sql = "INSERT INTO users (username, email, fname, lname) VALUES (?, ?, ?, ?)";
-        
+        try {
         PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         pstmt.setString(1, user.getUsername());
         pstmt.setString(2, user.getEmail());
         pstmt.setString(3, user.getFirstName());
         pstmt.setString(4, user.getLastName());
         pstmt.executeUpdate();
-        
         ResultSet rs = pstmt.getGeneratedKeys();
         if(rs.next()) {
             user.setId(rs.getInt("id"));
         }
+        }catch(SQLException e){
+            if(e.getMessage().indexOf("unique") > -1){
+                throw new UniquenessViolationException(e.getMessage());
+            }
+            throw e;
+        }
+       
 
         //take the created user and create an entry in Auth table
         sql = "INSERT INTO auth (userId, passwordHash) VALUES (?, ?)";
         
-        pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         pstmt.setInt(1, user.getId());
         pstmt.setString(2, user.getPassword());
         pstmt.executeUpdate();
-        
+        user.setPassword(null);
         return user;
     }
 
