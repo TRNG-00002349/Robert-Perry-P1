@@ -5,6 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
 
 import com.revature.entities.User;
 import com.revature.exceptions.UniquenessViolationException;
@@ -48,6 +51,22 @@ public class UserDao {
         pstmt.executeUpdate();
         user.setPassword(null);
         return user;
+    }
+
+    public User[] getFiltered(Map<String, String> filters) throws SQLException{
+        String sql = "SELECT * FROM users WHERE username LIKE ? AND fname LIKE ? AND lname LIKE ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, "%" + Objects.toString(filters.get("username"), "") + "%");
+        pstmt.setString(2, "%" + Objects.toString(filters.get("fname"), "")+ "%");
+        pstmt.setString(3, "%" + Objects.toString(filters.get("lname"), "")+ "%");
+
+        ResultSet rs = pstmt.executeQuery();
+
+        ArrayList<User> users = new ArrayList<>();
+        while(rs.next()){
+            users.add(new User(rs.getInt("id"),rs.getString("username"),rs.getString("email"), null, rs.getString("fname"), rs.getString("lname")));
+        }
+        return users.toArray(User[]::new);
     }
 
     public User getById(int id) throws SQLException{

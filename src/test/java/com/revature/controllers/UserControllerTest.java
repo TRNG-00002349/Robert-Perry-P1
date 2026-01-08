@@ -22,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.revature.services.UserService;
 import com.revature.entities.User;
 import com.revature.exceptions.UniquenessViolationException;
-import com.revature.utils.JavalinUtil;
+import com.revature.utils.JavalinApp;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import io.javalin.Javalin;

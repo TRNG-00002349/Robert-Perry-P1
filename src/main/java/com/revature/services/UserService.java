@@ -1,6 +1,13 @@
 package com.revature.services;
 
+
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 import com.revature.daos.UserDao;
 import com.revature.entities.User;
@@ -26,7 +33,22 @@ public class UserService {
 
         return new User();
     }
+    public User[] getFiltered(Map<String, List<String>> filters){
+        HashMap<String,String> f = new HashMap<>();
+        List<String> acceptedFilters = Arrays.asList("fname", "lname", "username");
+        for (String key : filters.keySet()) {
+            if(acceptedFilters.contains(key)){
+                f.put(key, filters.get(key).get(0));
+            }
+        }
+        try{
+            return userDao.getFiltered(f);
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return null;
 
+    }
     public User getById(int id){
         try{
            return userDao.getById(id);
