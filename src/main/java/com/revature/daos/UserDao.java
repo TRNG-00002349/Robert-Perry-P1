@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.revature.entities.User;
+import com.revature.exceptions.ResourceNotFoundException;
 import com.revature.exceptions.UniquenessViolationException;
 import com.revature.utils.DatabaseUtil;
 
@@ -69,7 +70,7 @@ public class UserDao {
         return users.toArray(User[]::new);
     }
 
-    public User getById(int id) throws SQLException{
+    public User getById(int id) throws SQLException, ResourceNotFoundException{
         //Insert record into the user table
         String sql = "SELECT * FROM users WHERE id = ?";
         PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -83,11 +84,13 @@ public class UserDao {
             user.setUsername(rs.getString("username"));
             user.setFirstName(rs.getString("fname"));
             user.setLastName(rs.getString("lname"));
-        }   
+        } else {
+            throw new ResourceNotFoundException("User Not Found");
+        }
         return user;  
     }
 
-    public User getByUsername(String username) throws SQLException{
+    public User getByUsername(String username) throws SQLException, ResourceNotFoundException{
         //Insert record into the user table
         String sql = "SELECT * FROM users WHERE username = ?";
         PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -101,7 +104,9 @@ public class UserDao {
             user.setUsername(rs.getString("username"));
             user.setFirstName(rs.getString("fname"));
             user.setLastName(rs.getString("lname"));
-        }   
+        } else {
+            throw new ResourceNotFoundException("User Not Found");
+        }  
         return user;  
     }
 
@@ -114,18 +119,44 @@ public class UserDao {
         pstmt.setString(4, user.getLastName());
         pstmt.setInt(5, user.getId());
         int rowsAffected = pstmt.executeUpdate();
-        
         //here check if rows affected, if not throw some error
+
+        if (user.getPassword() != null){
+             sql = "INSERT INTO auth (userId, passwordHash) VALUES (?, ?)";
+        
+            pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            pstmt.setInt(1, user.getId());
+            pstmt.setString(2, user.getPassword());
+            pstmt.executeUpdate();
+            user.setPassword(null);
+        }
         return user;  
     }
 
+    public User getAuth(User user) throws SQLException{
+        String sql = "SELECT passwordhash, userId FROM auth WHERE userId = (SELECT id from users where username = ?)";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1,user.getUsername());
+        ResultSet rs = pstmt.executeQuery();
+        User newUser = new User();
+        if(rs.next()){
+            newUser.setId(rs.getInt("userId"));
+            newUser.setPassword(rs.getString("passwordhash"));
+        }
+        return newUser;
+    }
+
     public boolean delete(int id) {
-        String sql = "DELETE FROM users WHERE id = ?";
+        String sql = "DELETE FROM auth where userId = ?";
         try{
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, id);
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0){
+                sql = "DELETE FROM users WHERE id = ?";
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setInt(1, id);
+                pstmt.executeUpdate();
                 return true;
             }
             return false;
