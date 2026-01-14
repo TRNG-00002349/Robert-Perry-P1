@@ -13,6 +13,7 @@ import java.util.List;
 
 import com.revature.entities.User;
 import com.revature.exceptions.ResourceNotFoundException;
+import com.revature.exceptions.UnauthorizedException;
 import com.revature.exceptions.UniquenessViolationException;
 import io.javalin.Javalin;
 /*
@@ -28,7 +29,7 @@ public class UserController implements Controller{
 
     @Override
     public void registerRoutes(Javalin server){
-        server.post("/users",this::create);
+        server.post("/register",this::create);
         server.post("/login", this::login);
         server.get("/users",this::getFiltered);
         server.get("/users/{id}", this::getById);
@@ -38,9 +39,11 @@ public class UserController implements Controller{
         server.put("/users/{id}", this::update);
         server.patch("/users/{id}", this::partialUpdate);
         server.delete("/users/{id}",this::delete);
-        server.before("")
+        server.before("/users/*", this::checkAuthorization);
+        server.before("/users", this::checkAuthorization);
         server.exception(UniquenessViolationException.class, this::handleUniqenessViolationException);
         server.exception(ResourceNotFoundException.class, this::handleResourceNotFoundException);
+        server.exception(UnauthorizedException.class, this::handleUnauthorizedException);
     }
 
 
@@ -109,6 +112,17 @@ public class UserController implements Controller{
         else {ctx.status(HttpStatus.NOT_FOUND);}
     }
 
+    public void checkAuthorization(Context ctx) throws UnauthorizedException{
+        try{
+            if(ctx.header("Authorization") != null)
+                userService.getById(Integer.parseInt(ctx.header("Authorization")));
+            else
+                throw new UnauthorizedException(null);
+        } catch (ResourceNotFoundException e){
+            throw new UnauthorizedException(null);
+        }
+
+    }
     public void handleUniqenessViolationException(UniquenessViolationException e, Context ctx){
         ctx.status(HttpStatus.CONFLICT);
         ctx.result("The username or email is already associated with another account.");
@@ -116,6 +130,10 @@ public class UserController implements Controller{
     public void handleResourceNotFoundException(ResourceNotFoundException e, Context ctx){
         ctx.status(HttpStatus.NOT_FOUND);
         ctx.result(e.getMessage());//already sanitized
+    }
+    public void handleUnauthorizedException(UnauthorizedException e, Context ctx){
+        ctx.status(HttpStatus.UNAUTHORIZED);
+        ctx.result("You are not able to access this resource");
     }
 
 

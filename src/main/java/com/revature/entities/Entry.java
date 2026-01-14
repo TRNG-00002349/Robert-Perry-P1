@@ -4,12 +4,21 @@ public class Entry {
     private Integer id;
     private Integer gameId;
     private Integer userId;
+    private String title;
     private String text;
     private String[] attchUrls;
     
     public Entry() {
 
     }
+    public Entry(Integer id, Integer gameId, Integer userId, String title, String text){
+        this.id = id;
+        this.gameId = gameId;
+        this.userId = userId;
+        this.title = title;
+        this.text = text;
+    }
+
     public Integer getId() {
         return id;
     }
@@ -27,6 +36,12 @@ public class Entry {
     }
     public void setUserId(Integer userId) {
         this.userId = userId;
+    }
+    public String getTitle() {
+        return title;
+    }
+    public void setTitle(String title) {
+        this.title = title;
     }
     public String getText() {
         return text;

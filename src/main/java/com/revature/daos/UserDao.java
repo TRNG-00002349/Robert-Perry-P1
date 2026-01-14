@@ -110,7 +110,7 @@ public class UserDao {
         return user;  
     }
 
-    public User update(User user) throws SQLException{
+    public User update(User user) throws SQLException, ResourceNotFoundException{
         String sql = "UPDATE users SET username = ?, email = ?, fname = ?, lname = ? WHERE id = ?";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, user.getUsername());
@@ -119,7 +119,9 @@ public class UserDao {
         pstmt.setString(4, user.getLastName());
         pstmt.setInt(5, user.getId());
         int rowsAffected = pstmt.executeUpdate();
-        //here check if rows affected, if not throw some error
+         if (rowsAffected < 1) {
+            throw new ResourceNotFoundException("No Game with that ID exists");
+        }
 
         if (user.getPassword() != null){
              sql = "INSERT INTO auth (userId, passwordHash) VALUES (?, ?)";
@@ -153,6 +155,15 @@ public class UserDao {
             pstmt.setInt(1, id);
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0){
+                sql = "DELETE FROM entries WHERE userId = ?";
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setInt(1, id);
+                pstmt.executeUpdate();
+                sql = "DELETE FROM games WHERE userId = ?";
+                pstmt = conn.prepareStatement(sql);
+                pstmt.setInt(1, id);
+                pstmt.executeUpdate();
+
                 sql = "DELETE FROM users WHERE id = ?";
                 pstmt = conn.prepareStatement(sql);
                 pstmt.setInt(1, id);
