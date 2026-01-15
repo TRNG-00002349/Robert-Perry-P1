@@ -120,15 +120,16 @@ public class UserDao {
         pstmt.setInt(5, user.getId());
         int rowsAffected = pstmt.executeUpdate();
          if (rowsAffected < 1) {
-            throw new ResourceNotFoundException("No Game with that ID exists");
+            throw new ResourceNotFoundException("User Not Found");
         }
 
         if (user.getPassword() != null){
-             sql = "INSERT INTO auth (userId, passwordHash) VALUES (?, ?)";
+             sql = "Update auth set passwordHash = ? where userId = ?";
         
             pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            pstmt.setInt(1, user.getId());
-            pstmt.setString(2, user.getPassword());
+            pstmt.setString(1, user.getPassword());
+            pstmt.setInt(2, user.getId());
+            
             pstmt.executeUpdate();
             user.setPassword(null);
         }
@@ -175,5 +176,45 @@ public class UserDao {
             return false;
         }
     }
+
+    public void createFollow(int userId, int followId) throws SQLException{
+        String sql = "INSERT INTO user_follows (userId, followId) VALUES (?,?)";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, userId);
+        pstmt.setInt(2, followId);
+        pstmt.executeUpdate();
+    }
+    public User[] getFollowers(int userId) throws SQLException{
+        String sql = "Select * from users where id in (Select userId from user_follows where followId = ?)";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, userId);
+        ResultSet rs = pstmt.executeQuery();
+
+        ArrayList<User> users = new ArrayList<>();
+        while(rs.next()){
+            users.add(new User(rs.getInt("id"),rs.getString("username"),rs.getString("email"), null, rs.getString("fname"), rs.getString("lname")));
+        }
+        return users.toArray(User[]::new);
+    }
+    public User[] getFollowing(int userId) throws SQLException{
+        String sql = "Select * from users where id in (Select followId from user_follows where userId = ?)";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, userId);
+        ResultSet rs = pstmt.executeQuery();
+
+        ArrayList<User> users = new ArrayList<>();
+        while(rs.next()){
+            users.add(new User(rs.getInt("id"),rs.getString("username"),rs.getString("email"), null, rs.getString("fname"), rs.getString("lname")));
+        }
+        return users.toArray(User[]::new);
+    }
+    public void deleteFollow(int userId, int followId) throws SQLException{
+        String sql = "Delete from user_follows where userId = ? and followId = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, userId);
+        pstmt.setInt(2, followId);
+        pstmt.executeUpdate();
+    }
+
 
 }

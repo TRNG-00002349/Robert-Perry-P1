@@ -18,6 +18,7 @@ import com.revature.exceptions.UniquenessViolationException;
 import io.javalin.Javalin;
 /*
     User controller, handles all HTTP Requests
+    need better authorization checks and signed in user info, will have to do for now
 */
 public class UserController implements Controller{
     
@@ -39,8 +40,16 @@ public class UserController implements Controller{
         server.put("/users/{id}", this::update);
         server.patch("/users/{id}", this::partialUpdate);
         server.delete("/users/{id}",this::delete);
+        server.post("/users/{id}/followers", this::followUser);
+        server.get("/users/{id}/followers", this::getFollowers);
+        server.get("/users/{id}/following", this::getFollowing);
+        server.delete("/users/{id}/followers/{userId}", this::deleteFollower);
         server.before("/users/*", this::checkAuthorization);
         server.before("/users", this::checkAuthorization);
+        server.before("/entries/*", this::checkAuthorization);
+        server.before("/entries", this::checkAuthorization);
+        server.before("/games/*", this::checkAuthorization);
+        server.before("/games", this::checkAuthorization);
         server.exception(UniquenessViolationException.class, this::handleUniqenessViolationException);
         server.exception(ResourceNotFoundException.class, this::handleResourceNotFoundException);
         server.exception(UnauthorizedException.class, this::handleUnauthorizedException);
@@ -111,6 +120,34 @@ public class UserController implements Controller{
         if(userService.delete(id)){ctx.status(HttpStatus.OK);}
         else {ctx.status(HttpStatus.NOT_FOUND);}
     }
+
+    public void followUser(Context ctx) throws SQLException{
+        int userId = Integer.parseInt(ctx.header("Authorization"));
+        int followId = Integer.parseInt(ctx.pathParam("id"));
+        userService.createFollower(userId, followId);
+        ctx.status(HttpStatus.CREATED);
+        ctx.result("User successfully followed");
+    }
+    public void getFollowers(Context ctx) throws SQLException{
+        int userId = Integer.parseInt(ctx.pathParam("id"));
+        User[] followers = userService.getFollowers(userId);
+        ctx.status(HttpStatus.OK);
+        ctx.json(followers);
+    }
+    public void getFollowing(Context ctx) throws SQLException{
+        int userId = Integer.parseInt(ctx.pathParam("id"));
+        User[] followers = userService.getFollowing(userId);
+        ctx.status(HttpStatus.OK);
+        ctx.json(followers);
+    }
+    public void deleteFollower(Context ctx) throws SQLException{
+        int userId = Integer.parseInt(ctx.pathParam("userId"));
+        int followId = Integer.parseInt(ctx.pathParam("id"));
+        userService.deleteFollower(userId, followId);
+        ctx.status(HttpStatus.OK);
+        ctx.result("User successfully unfollowed");
+    }
+
 
     public void checkAuthorization(Context ctx) throws UnauthorizedException{
         try{

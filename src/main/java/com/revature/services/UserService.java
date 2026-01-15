@@ -113,6 +113,20 @@ public class UserService {
            return userDao.delete(id);
     }
 
+    public void createFollower(int userId, int followId) throws SQLException{
+        userDao.createFollow(userId, followId);
+    }
+    public User[] getFollowers(int id) throws SQLException{
+        return userDao.getFollowers(id);
+    }
+    public User[] getFollowing(int id) throws SQLException{
+        return userDao.getFollowing(id);
+    }
+    public void deleteFollower(int userId, int followId) throws SQLException{
+        userDao.deleteFollow(userId,followId);
+    }
+
+
     public String hashPasword(String pass){
           return BCrypt.hashpw(pass, BCrypt.gensalt(16));
     }

@@ -18,7 +18,7 @@ public class GameDao {
     Connection conn = DatabaseUtil.getConnection();
 
     public Game save(Game game){
-        String sql = "INSERT INTO games (userId, name, desription, status, releaseDate, createdDate) VALUES (?,?,?,?,?, NOW())";
+        String sql = "INSERT INTO games (userId, name, description, status, releaseDate, createdDate) VALUES (?,?,?,?,?, NOW())";
         try{
             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             pstmt.setInt(1, game.getUserId());
