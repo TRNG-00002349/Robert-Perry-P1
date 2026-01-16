@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.List;
 
 import com.revature.entities.User;
+import com.revature.exceptions.InvalidDataException;
 import com.revature.exceptions.ResourceNotFoundException;
 import com.revature.exceptions.UnauthorizedException;
 import com.revature.exceptions.UniquenessViolationException;
@@ -53,12 +54,13 @@ public class UserController implements Controller{
         server.exception(UniquenessViolationException.class, this::handleUniqenessViolationException);
         server.exception(ResourceNotFoundException.class, this::handleResourceNotFoundException);
         server.exception(UnauthorizedException.class, this::handleUnauthorizedException);
+        server.exception(InvalidDataException.class, this::handleInvalidDataException);
     }
 
 
     //Handle all user requests and user related errors
 
-    public void create(Context ctx) throws UniquenessViolationException{
+    public void create(Context ctx) throws UniquenessViolationException, InvalidDataException{
         User newUser = ctx.bodyAsClass(User.class);
         User finalUser = userService.create(newUser);
 
@@ -98,7 +100,7 @@ public class UserController implements Controller{
     }
 
     //put
-    public void update(Context ctx) throws ResourceNotFoundException, UniquenessViolationException{
+    public void update(Context ctx) throws ResourceNotFoundException, UniquenessViolationException, InvalidDataException{
         User newUser = ctx.bodyAsClass(User.class);
         if (newUser.getId() == null){newUser.setId(Integer.parseInt(ctx.pathParam("id")));}
         User finalUser = userService.update(newUser);
@@ -107,7 +109,7 @@ public class UserController implements Controller{
     }
 
     //patch
-    public void partialUpdate(Context ctx) throws ResourceNotFoundException, UniquenessViolationException{
+    public void partialUpdate(Context ctx) throws ResourceNotFoundException, UniquenessViolationException, InvalidDataException{
         User newUser = ctx.bodyAsClass(User.class);
         if (newUser.getId() == null){newUser.setId(Integer.parseInt(ctx.pathParam("id")));}
         User finalUser = userService.partialUpdate(newUser);
@@ -121,7 +123,7 @@ public class UserController implements Controller{
         else {ctx.status(HttpStatus.NOT_FOUND);}
     }
 
-    public void followUser(Context ctx) throws SQLException{
+    public void followUser(Context ctx) throws SQLException, InvalidDataException{
         int userId = Integer.parseInt(ctx.header("Authorization"));
         int followId = Integer.parseInt(ctx.pathParam("id"));
         userService.createFollower(userId, followId);
@@ -172,6 +174,9 @@ public class UserController implements Controller{
         ctx.status(HttpStatus.UNAUTHORIZED);
         ctx.result("You are not able to access this resource");
     }
-
+    public void handleInvalidDataException(InvalidDataException e, Context ctx){
+        ctx.status(HttpStatus.BAD_REQUEST);
+        ctx.result(e.getMessage());//already sanitized
+    }
 
 }

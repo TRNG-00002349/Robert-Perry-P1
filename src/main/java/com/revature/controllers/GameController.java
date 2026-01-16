@@ -28,6 +28,7 @@ public class GameController implements Controller {
         server.get("/games",this::getFiltered);
         server.get("/games/{id}", this::getById);
         server.get("/users/{id}/games", this::getByUserId);
+        server.get("/users/{id}/following/games", this::getForFollowing);
         server.put("/games", this::update);
         server.patch("/games", this::partialUpdate);
         server.put("/games/{id}", this::update);
@@ -63,6 +64,14 @@ public class GameController implements Controller {
     public void getByUserId(Context ctx) throws SQLException{
         int id = Integer.parseInt(ctx.pathParam("id"));
         Game[] games = gameService.getByUserId(id);
+
+        ctx.status(HttpStatus.OK);
+        ctx.json(games);
+    }
+
+    public void getForFollowing(Context ctx) throws SQLException{
+        int id = Integer.parseInt(ctx.pathParam("id"));
+        Game[] games = gameService.getForFollowing(id);
 
         ctx.status(HttpStatus.OK);
         ctx.json(games);

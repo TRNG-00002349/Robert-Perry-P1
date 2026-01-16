@@ -29,6 +29,7 @@ public class EntryController implements Controller {
         server.get("/entries/{id}", this::getById);
         server.get("/games/{id}/entries", this::getByGameId);
         server.get("/users/{id}/entries", this::getByUserId);
+        server.get("/users/{id}/following/entries", this::getForFollowing);
         server.put("/entries", this::update);
         server.patch("/entries", this::partialUpdate);
         server.put("/entries/{id}", this::update);
@@ -75,6 +76,14 @@ public class EntryController implements Controller {
         ctx.status(HttpStatus.OK);
         ctx.json(entries);
     }
+    public void getForFollowing(Context ctx) throws SQLException{
+        int id = Integer.parseInt(ctx.pathParam("id"));
+        Entry[] entries = entryService.getForFollowing(id);
+
+        ctx.status(HttpStatus.OK);
+        ctx.json(entries);
+    }
+
 
      //put
     public void update(Context ctx) throws ResourceNotFoundException, SQLException{

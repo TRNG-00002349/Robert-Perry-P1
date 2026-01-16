@@ -51,6 +51,10 @@ public class EntryService {
         return entryDao.getByUserId(id);
     }
 
+    public Entry[] getForFollowing(int id) throws SQLException{
+        return entryDao.getForFollowing(id);
+    }
+
     public Entry update(Entry entry) throws SQLException, ResourceNotFoundException{
         return entryDao.update(entry);
     }

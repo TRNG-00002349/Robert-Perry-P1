@@ -55,7 +55,7 @@ public class UserDao {
     }
 
     public User[] getFiltered(Map<String, String> filters) throws SQLException{
-        String sql = "SELECT * FROM users WHERE username LIKE ? AND fname LIKE ? AND lname LIKE ?";
+        String sql = "SELECT * FROM users WHERE Lower(username) LIKE Lower(?) AND Lower(fname) LIKE Lower(?) AND Lower(lname) LIKE Lower(?)";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, "%" + Objects.toString(filters.get("username"), "") + "%");
         pstmt.setString(2, "%" + Objects.toString(filters.get("fname"), "")+ "%");
