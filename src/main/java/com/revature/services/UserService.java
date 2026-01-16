@@ -31,7 +31,7 @@ public class UserService {
     }
 
     private boolean validatePassword(String pass){
-        return pass.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d){8,}$");
+        return pass.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$");
     }
     private boolean validateEmail(String email){
         return email.matches("^[^@]+@[^@]+\\.[^@]+$");
