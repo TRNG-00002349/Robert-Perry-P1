@@ -15,6 +15,7 @@ import java.util.List;
 
 import com.revature.daos.UserDao;
 import com.revature.entities.User;
+import com.revature.exceptions.InvalidDataException;
 import com.revature.exceptions.ResourceNotFoundException;
 /*
     User service, business logic
@@ -29,8 +30,17 @@ public class UserService {
         this.userDao = userDao;
     }
 
-    public User create(User user) throws UniquenessViolationException{
+    private boolean validatePassword(String pass){
+        return pass.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d){8,}$");
+    }
+    private boolean validateEmail(String email){
+        return email.matches("^[^@]+@[^@]+\\.[^@]+$");
+    }
+
+    public User create(User user) throws UniquenessViolationException, InvalidDataException{
         try{
+            if (!validatePassword(user.getPassword())) throw new InvalidDataException("Your password must be at least 8 characters long and contain at least 1 uppercase letter, 1 lowercase letter, and 1 number");
+            if (!validateEmail(user.getEmail())) throw new InvalidDataException("Invalid email address");
             user.setPassword(hashPasword(user.getPassword()));
            return userDao.saveUser(user);
         } catch (SQLException e) {
@@ -86,11 +96,13 @@ public class UserService {
         return new User();
     }
 
-    public User update(User user) throws ResourceNotFoundException, UniquenessViolationException{
+    public User update(User user) throws ResourceNotFoundException, UniquenessViolationException, InvalidDataException{
         try{
             if (user.getPassword() != null){
+                if (!validatePassword(user.getPassword())) throw new InvalidDataException("Your password must be at least 8 characters long and contain at least 1 uppercase letter, 1 lowercase letter, and 1 number");
                 user.setPassword(hashPasword(user.getPassword()));
             }
+            if (user.getEmail() != null && !validateEmail(user.getEmail())) throw new InvalidDataException("Invalid email address");
             return userDao.update(user);
         } catch(SQLException e){
             e.printStackTrace();
@@ -99,7 +111,7 @@ public class UserService {
     }
 
     //tightly coupled :( if you have time try to fix this
-    public User partialUpdate(User user) throws ResourceNotFoundException, UniquenessViolationException{
+    public User partialUpdate(User user) throws ResourceNotFoundException, UniquenessViolationException, InvalidDataException{
         User oldUser = getById(user.getId());
         oldUser.setEmail(Objects.toString(user.getEmail(), oldUser.getEmail()));
         oldUser.setUsername(Objects.toString(user.getUsername(), oldUser.getUsername()));
@@ -113,7 +125,8 @@ public class UserService {
            return userDao.delete(id);
     }
 
-    public void createFollower(int userId, int followId) throws SQLException{
+    public void createFollower(int userId, int followId) throws SQLException, InvalidDataException{
+        if(userId == followId) throw new InvalidDataException("You cannot follow yourself");
         userDao.createFollow(userId, followId);
     }
     public User[] getFollowers(int id) throws SQLException{

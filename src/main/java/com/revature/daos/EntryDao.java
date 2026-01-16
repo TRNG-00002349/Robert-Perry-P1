@@ -37,7 +37,7 @@ public class EntryDao {
     }
 
     public Entry[] getFiltered(Map<String, String> filters) throws SQLException{
-        String sql = "SELECT * FROM entries WHERE title LIKE ?";
+        String sql = "SELECT * FROM entries WHERE Lower(title) LIKE Lower(?)";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, "%" + Objects.toString(filters.get("title"), "") + "%");
 
@@ -76,6 +76,8 @@ public class EntryDao {
         return entries.toArray(Entry[]::new);
     }
 
+
+
     public Entry[] getByUserId(int id) throws SQLException{
         String sql = "SELECT * FROM entries WHERE userId = ?";
         PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -88,6 +90,20 @@ public class EntryDao {
         }
         return entries.toArray(Entry[]::new);
     }
+
+    public Entry[] getForFollowing(int id) throws SQLException{
+        String sql = "SELECT * FROM entries WHERE userId IN (Select followId from user_follows where userId = ?)";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, id);
+        ResultSet rs = pstmt.executeQuery();
+        
+        ArrayList<Entry> entries = new ArrayList<>();
+        while(rs.next()){
+            entries.add(new Entry(rs.getInt("id"),rs.getInt("gameId"),rs.getInt("userId"),rs.getString("title"),rs.getString("text")));
+        }
+        return entries.toArray(Entry[]::new);
+    }
+
 
     public Entry update(Entry entry) throws SQLException, ResourceNotFoundException{
         String sql = "UPDATE entries SET userId = ?, gameId =?, title = ?, text = ? WHERE id = ?";

@@ -38,7 +38,7 @@ public class GameDao {
     }
 
     public Game[] getFiltered(Map<String, String> filters) throws SQLException{
-        String sql = "SELECT * FROM games WHERE name LIKE ? AND status LIKE ?";
+        String sql = "SELECT * FROM games WHERE Lower(name) LIKE Lower(?) AND Lower(status) LIKE Lower(?)";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setString(1, "%" + Objects.toString(filters.get("name"), "") + "%");
         pstmt.setString(2, "%" + Objects.toString(filters.get("status"), "")+ "%");
@@ -54,6 +54,20 @@ public class GameDao {
 
     public Game[] getByUserId(int id) throws SQLException{
         String sql = "SELECT * FROM games WHERE userId = ?";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, id);
+        ResultSet rs = pstmt.executeQuery();
+        
+        ArrayList<Game> games = new ArrayList<>();
+        while(rs.next()){
+            games.add(new Game(rs.getInt("id"),rs.getInt("userId"),rs.getString("description"),rs.getString("name"), rs.getDate("releaseDate"),rs.getString("status")));
+        }
+        return games.toArray(Game[]::new);
+
+    }
+
+    public Game[] getForFollowing(int id) throws SQLException{
+        String sql = "SELECT * FROM games WHERE userId IN (Select followId from user_follows where userId = ?)";
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setInt(1, id);
         ResultSet rs = pstmt.executeQuery();

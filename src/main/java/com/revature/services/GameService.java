@@ -44,6 +44,10 @@ public class GameService {
         return gameDao.getByUserId(id);
     }
 
+    public Game[] getForFollowing(int id) throws SQLException{
+        return gameDao.getForFollowing(id);
+    }
+
     public Game getById(int id) throws SQLException, ResourceNotFoundException{
         return gameDao.getById(id);
     }

@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.revature.services.UserService;
 import com.revature.entities.User;
+import com.revature.exceptions.InvalidDataException;
 import com.revature.exceptions.UniquenessViolationException;
 import com.revature.utils.JavalinApp;
 import io.javalin.http.Context;
@@ -40,7 +41,7 @@ public class UserControllerTest {
     
 
     @Test
-    public void createSuccessTest() throws UniquenessViolationException{
+    public void createSuccessTest() throws UniquenessViolationException, InvalidDataException{
         Context ctx = mock(Context.class);
         User user = new User();
         when(ctx.bodyAsClass(User.class)).thenReturn(user);
@@ -49,7 +50,7 @@ public class UserControllerTest {
     }
    
     @Test
-    public void createFailedTest() throws UniquenessViolationException{
+    public void createFailedTest() throws UniquenessViolationException, InvalidDataException{
         Context ctx = mock(Context.class);
         User user = new User();
         when(ctx.bodyAsClass(User.class)).thenReturn(user);
